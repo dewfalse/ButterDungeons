@@ -45,7 +45,7 @@ public class DungeonConfig {
 	public int generate_num_limit = -1;
 	public Set<Integer> allow_dimentions = new LinkedHashSet();
 
-	public String dungeon_name;
+	public String dungeon_name = "";
 
 	public int skip = 0;
 	public int num = 0;
@@ -60,13 +60,34 @@ public class DungeonConfig {
 		Configuration cfg = new Configuration(cfg_file);
 		cfg.load();
 
+		loadConfiguration(cfg);
+
+		// load setting file
+		settings = new DungeonSettings();
+		settings.loadSettings(cfg_file);
+
+		// load map file
+		map = new DungeonMap();
+		map.loadMap(cfg_file);
+	}
+
+	public void save(File cfg_file) {
+		Configuration cfg = new Configuration(cfg_file);
+		cfg.load();
+
+		loadConfiguration(cfg);
+
+		cfg.save();
+	}
+
+	private void loadConfiguration(Configuration cfg) {
 		floor_level_min = cfg.get(Configuration.CATEGORY_GENERAL, "floor_level_min", floor_level_min).getInt();
 		floor_level_max = cfg.get(Configuration.CATEGORY_GENERAL, "floor_level_max", floor_level_max).getInt();
 		replace_block_id = cfg.get(Configuration.CATEGORY_GENERAL, "replace_block_id", replace_block_id).getInt();
 		replace_block_percentage = cfg.get(Configuration.CATEGORY_GENERAL, "replace_block_percentage", replace_block_percentage).getInt();
 		generate_frequency = cfg.get(Configuration.CATEGORY_GENERAL, "generate_frequency", generate_frequency).getInt();
 		generate_num_limit = cfg.get(Configuration.CATEGORY_GENERAL, "generate_num_limit", generate_num_limit).getInt();
-		dungeon_name = cfg.get(Configuration.CATEGORY_GENERAL, "dungeon_name", "").value;
+		dungeon_name = cfg.get(Configuration.CATEGORY_GENERAL, "dungeon_name", dungeon_name).value;
 		String cfg_allow_dimentions = cfg.get(Configuration.CATEGORY_GENERAL, "allow_dimentions", "0").value;
 		for(String token : cfg_allow_dimentions.split(",")) {
 			try {
@@ -86,12 +107,6 @@ public class DungeonConfig {
 			}
 			allow_biomes.add(biome);
 		}
-
-		// load setting file
-		settings.loadSettings(cfg_file);
-
-		// load map file
-		map.loadMap(cfg_file);
 	}
 
 	public String getName() {

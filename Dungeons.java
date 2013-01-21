@@ -80,7 +80,7 @@ public class Dungeons {
 
 	}
 
-	private static void loadDungeonConfig(File f) {
+	static void loadDungeonConfig(File f) {
 		try {
 			DungeonConfig c = new DungeonConfig();
 			c.load(f);

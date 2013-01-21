@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -134,7 +135,8 @@ public class CommandCut extends  CommandBase  {
 			}
 		}
 
-		String t = (new java.util.Date()).toString().replace(' ','_').replace(':', '-');
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		String t = sdf.format(new java.util.Date());
 		File root = new File(Minecraft.getMinecraftDir(), Config.root_path);
 		{
 			File file = new File(root.getPath(), t + ".settings");
@@ -188,6 +190,14 @@ public class CommandCut extends  CommandBase  {
 			}
 			bw.close();
 			fw.close();
+		}
+		{
+			File file = new File(root.getPath(), t + ".cfg");
+			DungeonConfig cfg = new DungeonConfig();
+			cfg.generate_num_limit = 0;
+			cfg.dungeon_name = t;
+			cfg.save(file);
+			Dungeons.loadDungeonConfig(file);
 		}
 		player.sendChatToPlayer("buttercut save to " + t);
 	}
