@@ -1,14 +1,10 @@
 package butterdungeons;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Level;
 
 import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -36,16 +32,6 @@ public class DungeonGenerator implements IWorldGenerator {
 					if(generateDungeon(world, random, chunkX << 4, chunkZ << 4, cfg)) {
 						cfg.skip = - random.nextInt(cfg.generate_frequency / 2);
 						cfg.num += 1;
-
-						Map<String, NBTBase> m = new LinkedHashMap();
-						NBTTagCompound tag = new NBTTagCompound();
-						tag.setName("ButterDungeons");
-						NBTTagCompound numTag = new NBTTagCompound();
-						numTag.setInteger(cfg.dungeon_name, cfg.num);;
-						tag.setCompoundTag("Num", numTag);
-
-						world.getWorldInfo().setAdditionalProperties(m);
-						System.out.println(world.getWorldInfo().getWorldName());
 					}
 					break;
 				}
@@ -61,9 +47,9 @@ public class DungeonGenerator implements IWorldGenerator {
 		}
 		cfg.generating = true;
 
-		int xd = cfg.map.length;
-		int yd = cfg.map[0].length;
-		int zd = cfg.map[0][0].length;
+		int xd = cfg.map.map.length;
+		int yd = cfg.map.map[0].length;
+		int zd = cfg.map.map[0][0].length;
 
 		int xs = random.nextInt(16);
 		int zs = random.nextInt(16);
@@ -93,7 +79,7 @@ public class DungeonGenerator implements IWorldGenerator {
 			n += v.get(y);
 		}
 		if(n * 100 >= xd * yd * zd *cfg.replace_block_percentage) {
-			buildDungeon(world, random, chunkX, cfg.floor_level_min, chunkZ, cfg);
+			cfg.map.buildDungeon(world, random, chunkX, cfg.floor_level_min, chunkZ, cfg);
 			cfg.generating = false;
 			return true;
 		}
@@ -101,55 +87,13 @@ public class DungeonGenerator implements IWorldGenerator {
 			n -= v.get(y);
 			n += v.get(yd + y);
 			if(n * 100 >= xd * yd * zd *cfg.replace_block_percentage) {
-				buildDungeon(world, random, chunkX, cfg.floor_level_min + y, chunkZ, cfg);
+				cfg.map.buildDungeon(world, random, chunkX, cfg.floor_level_min + y, chunkZ, cfg);
 				cfg.generating = false;
 				return true;
 			}
 		}
 		cfg.generating = false;
 		return false;
-	}
-
-	public void buildDungeon(World world, Random random, int x, int y, int z, DungeonConfig cfg) {
-		int xd = cfg.map.length;
-		int yd = cfg.map[0].length;
-		int zd = cfg.map[0][0].length;
-
-		boolean[][][] r = new boolean[xd][yd][zd];
-		for(int j = 0 ; j < yd; ++j) {
-			for(int i = 0; i < xd; ++i) {
-				for(int k = 0; k < zd; ++k) {
-					char c = cfg.map[i][yd - j - 1][k];
-					boolean b = true;
-					try {
-						b = cfg.setBlock(world, random, x + i, y + j, z + k, c);
-					}
-					catch(Exception e) {
-						FMLLog.log(Level.WARNING, e, "ButterDungeons setBlock exception %c", c);
-					}
-					r[i][j][k] = b;
-				}
-			}
-		}
-
-		// retry
-		for(int j = 0 ; j < yd; ++j) {
-			for(int i = 0; i < xd; ++i) {
-				for(int k = 0; k < zd; ++k) {
-					if(r[i][j][k] == false) {
-						char c = cfg.map[i][yd - j - 1][k];
-						boolean b = true;
-						try {
-							b = cfg.setBlock(world, random, x + i, y + j, z + k, c);
-						}
-						catch(Exception e) {
-							FMLLog.log(Level.WARNING, e, "ButterDungeons setBlock exception %c", c);
-						}
-					}
-				}
-			}
-		}
-		FMLLog.log(Level.INFO, "ButterDungeons generateDungeon %s in %d, %d, %d", cfg.getName(), x, y, z);
 	}
 
 }

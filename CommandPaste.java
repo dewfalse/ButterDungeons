@@ -34,8 +34,7 @@ public class CommandPaste extends CommandBase implements ICommand {
 		}
 		for(DungeonConfig cfg : Dungeons.dungeons) {
 			if(var2[0].compareToIgnoreCase(cfg.dungeon_name) == 0) {
-				DungeonGenerator g = new DungeonGenerator();
-				g.buildDungeon(player.worldObj, player.worldObj.rand, (int) player.posX,(int) player.posY,(int) player.posZ, cfg);
+				cfg.map.buildDungeon(player.worldObj, player.worldObj.rand, (int) player.posX,(int) player.posY,(int) player.posZ, cfg);
 				player.sendChatToPlayer("butterpaste : " + cfg.dungeon_name);
 			}
 		}
