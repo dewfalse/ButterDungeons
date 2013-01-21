@@ -1,11 +1,14 @@
 package butterdungeons;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 import java.util.logging.Level;
 
 import net.minecraft.block.Block;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -17,7 +20,6 @@ public class DungeonGenerator implements IWorldGenerator {
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world,
 			IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
-
 
 		for(DungeonConfig cfg : Dungeons.dungeons) {
 			if(cfg.allow_dimentions.contains(world.provider.dimensionId) == false) {
@@ -34,6 +36,16 @@ public class DungeonGenerator implements IWorldGenerator {
 					if(generateDungeon(world, random, chunkX << 4, chunkZ << 4, cfg)) {
 						cfg.skip = - random.nextInt(cfg.generate_frequency / 2);
 						cfg.num += 1;
+
+						Map<String, NBTBase> m = new LinkedHashMap();
+						NBTTagCompound tag = new NBTTagCompound();
+						tag.setName("ButterDungeons");
+						NBTTagCompound numTag = new NBTTagCompound();
+						numTag.setInteger(cfg.dungeon_name, cfg.num);;
+						tag.setCompoundTag("Num", numTag);
+
+						world.getWorldInfo().setAdditionalProperties(m);
+						System.out.println(world.getWorldInfo().getWorldName());
 					}
 					break;
 				}

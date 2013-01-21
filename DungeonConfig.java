@@ -104,160 +104,164 @@ public class DungeonConfig {
 		}
 
 		// load setting file
-		{
-			File file = new File(cfg_file.getParent(), cfg_file.getName().replace(".cfg", ".settings"));
-			FileReader fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
-			String line = "";
-			int linenum = 0;
-			while(true) {
-				line = br.readLine();
-				linenum++;
-				if(line == null) {
-					break;
-				}
-				if(line.contains("=")) {
-					String[] tmp =line.split("=");
-					if(tmp.length != 2) {
-						continue;
-					}
-					String key = tmp[0].trim();
-					if(key.length() == 0) {
-						continue;
-					}
-					char c = key.charAt(0);
-					String value = tmp[1].trim();
-					if(value.length() == 0) {
-						continue;
-					}
-
-					// c = CHEST stone * 1, ingotIron * 1, cloth:4 * 1, 14 * 2, potion+
-					if(value.trim().startsWith("CHEST")) {
-						chestMap.put(c, value.replaceFirst("CHEST", "").trim());
-						blockIdMap.put(c, Block.chest.blockID);
-					}
-					// c = RANDOMCHEST stone * 1, ingotIron * 1, cloth:4 * 1, 14 * 2, potion+
-					else if(value.trim().startsWith("RANDOMCHEST")) {
-						randomChestMap.put(c, value.replaceFirst("RANDOMCHEST", "").trim());
-						blockIdMap.put(c, Block.chest.blockID);
-					}
-					// c = SPAWNER pig
-					else if(value.trim().startsWith("SPAWNER")) {
-						String[] mobnames = value.replaceFirst("SPAWNER", "").trim().split(" ");
-						Random rand = new Random();
-						mobSpawnerMap.put(c, mobnames[rand.nextInt(mobnames.length)]);
-						blockIdMap.put(c, Block.mobSpawner.blockID);
-					}
-					// c = ONEUSESPAWNER pig
-					else if(value.trim().startsWith("ONEUSESPAWNER")) {
-						String[] mobnames = value.replaceFirst("ONEUSESPAWNER", "").trim().split(" ");
-						Random rand = new Random();
-						mobSpawnerMap.put(c, mobnames[rand.nextInt(mobnames.length)]);
-						blockIdMap.put(c, Config.blockOneUseSpawnerId);
-					}
-					// c = cloth:4
-					else if(value.contains(":")) {
-						String[] a = value.split(":");
-						if(a.length == 2) {
-							int id = getBlockId(a[0]);
-							try {
-								if(id != -1) {
-									int meta = Integer.parseInt(a[1].trim());
-									blockIdMap.put(c, id);
-									blockMetadataMap.put(c, meta);
-								}
-								else {
-									FMLLog.log(Level.WARNING, "ButterDungeons %c format error, %s", c, a[0]);
-								}
-							}
-							catch(NumberFormatException e) {
-								FMLLog.log(Level.WARNING, e, "ButterDungeons setting invalid: %d line", linenum);
-							}
-						}
-					}
-					// c = 4 or c = stone
-					else {
-						int id = getBlockId(value);
-						if(id != -1) {
-							blockIdMap.put(c, id);
-						}
-						else {
-							FMLLog.log(Level.WARNING, "ButterDungeons %c format error, %s", c, value);
-						}
-					}
-				}
-			}
-			br.close();
-			fr.close();
-		}
+		loadSettings(cfg_file);
 
 		// load map file
-		{
-			File file = new File(cfg_file.getParent(), cfg_file.getName().replace(".cfg", ".map"));
-			FileReader fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
-			String s = "";
-			int x = 0;
-			int y = 0;
-			int z = 0;
-			int z_tmp = 0;
-			Queue<String> q = new LinkedList();
-			while(true) {
-				s = br.readLine();
-				if(s == null) {
-					break;
-				}
-				q.add(s);
-				x = Math.max(x, s.length());
-				if(s.startsWith("-")) {
-					y++;
-					z = Math.max(z, z_tmp);
-					z_tmp = 0;
-				}
-				else {
-					z_tmp++;
-				}
+		loadMap(cfg_file);
+	}
+
+	private void loadSettings(File cfg_file) throws FileNotFoundException, IOException {
+		File file = new File(cfg_file.getParent(), cfg_file.getName().replace(".cfg", ".settings"));
+		FileReader fr = new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		String line = "";
+		int linenum = 0;
+		while(true) {
+			line = br.readLine();
+			linenum++;
+			if(line == null) {
+				break;
 			}
-			z = Math.max(z, z_tmp);
-			map = new char[x][y][z];
-			String line = "";
-			for(int j = 0; j < y; ++j) {
-				for(int k = 0; k < z; ++k) {
-					line = q.peek();
-					if(line == null || line.startsWith("-")) {
-						if(k == 0) {
-							// skip to next level
-							if(line != null) {
-								q.remove();
+			if(line.contains("=")) {
+				String[] tmp =line.split("=");
+				if(tmp.length != 2) {
+					continue;
+				}
+				String key = tmp[0].trim();
+				if(key.length() == 0) {
+					continue;
+				}
+				char c = key.charAt(0);
+				String value = tmp[1].trim();
+				if(value.length() == 0) {
+					continue;
+				}
+
+				// c = CHEST stone * 1, ingotIron * 1, cloth:4 * 1, 14 * 2, potion+
+				if(value.trim().startsWith("CHEST")) {
+					chestMap.put(c, value.replaceFirst("CHEST", "").trim());
+					blockIdMap.put(c, Block.chest.blockID);
+				}
+				// c = RANDOMCHEST stone * 1, ingotIron * 1, cloth:4 * 1, 14 * 2, potion+
+				else if(value.trim().startsWith("RANDOMCHEST")) {
+					randomChestMap.put(c, value.replaceFirst("RANDOMCHEST", "").trim());
+					blockIdMap.put(c, Block.chest.blockID);
+				}
+				// c = SPAWNER pig
+				else if(value.trim().startsWith("SPAWNER")) {
+					String[] mobnames = value.replaceFirst("SPAWNER", "").trim().split(" ");
+					Random rand = new Random();
+					mobSpawnerMap.put(c, mobnames[rand.nextInt(mobnames.length)]);
+					blockIdMap.put(c, Block.mobSpawner.blockID);
+				}
+				// c = ONEUSESPAWNER pig
+				else if(value.trim().startsWith("ONEUSESPAWNER")) {
+					String[] mobnames = value.replaceFirst("ONEUSESPAWNER", "").trim().split(" ");
+					Random rand = new Random();
+					mobSpawnerMap.put(c, mobnames[rand.nextInt(mobnames.length)]);
+					blockIdMap.put(c, Config.blockOneUseSpawnerId);
+				}
+				// c = cloth:4
+				else if(value.contains(":")) {
+					String[] a = value.split(":");
+					if(a.length == 2) {
+						int id = getBlockId(a[0]);
+						try {
+							if(id != -1) {
+								int meta = Integer.parseInt(a[1].trim());
+								blockIdMap.put(c, id);
+								blockMetadataMap.put(c, meta);
+							}
+							else {
+								FMLLog.log(Level.WARNING, "ButterDungeons %c format error, %s", c, a[0]);
 							}
 						}
-						else {
-							for(int i = 0; i < x; ++i) {
-								map[i][j][k] = ' ';
-							}
-							continue;
+						catch(NumberFormatException e) {
+							FMLLog.log(Level.WARNING, e, "ButterDungeons setting invalid: %d line", linenum);
 						}
 					}
-
-					if(line == null) {
-						line = "";
+				}
+				// c = 4 or c = stone
+				else {
+					int id = getBlockId(value);
+					if(id != -1) {
+						blockIdMap.put(c, id);
 					}
 					else {
-						line = q.remove();
-					}
-					for(int i = 0; i < x; ++i) {
-						if(i < line.length()) {
-							map[i][j][k] = line.charAt(i);
-						}
-						else {
-							map[i][j][k] = ' ';
-						}
+						FMLLog.log(Level.WARNING, "ButterDungeons %c format error, %s", c, value);
 					}
 				}
 			}
-			br.close();
-			fr.close();
 		}
+		br.close();
+		fr.close();
+	}
+
+	private void loadMap(File cfg_file) throws FileNotFoundException, IOException {
+		File file = new File(cfg_file.getParent(), cfg_file.getName().replace(".cfg", ".map"));
+		FileReader fr = new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		String s = "";
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		int z_tmp = 0;
+		Queue<String> q = new LinkedList();
+		while(true) {
+			s = br.readLine();
+			if(s == null) {
+				break;
+			}
+			q.add(s);
+			x = Math.max(x, s.length());
+			if(s.startsWith("-")) {
+				y++;
+				z = Math.max(z, z_tmp);
+				z_tmp = 0;
+			}
+			else {
+				z_tmp++;
+			}
+		}
+		z = Math.max(z, z_tmp);
+		map = new char[x][y][z];
+		String line = "";
+		for(int j = 0; j < y; ++j) {
+			for(int k = 0; k < z; ++k) {
+				line = q.peek();
+				if(line == null || line.startsWith("-")) {
+					if(k == 0) {
+						// skip to next level
+						if(line != null) {
+							q.remove();
+						}
+					}
+					else {
+						for(int i = 0; i < x; ++i) {
+							map[i][j][k] = ' ';
+						}
+						continue;
+					}
+				}
+
+				if(line == null) {
+					line = "";
+				}
+				else {
+					line = q.remove();
+				}
+				for(int i = 0; i < x; ++i) {
+					if(i < line.length()) {
+						map[i][j][k] = line.charAt(i);
+					}
+					else {
+						map[i][j][k] = ' ';
+					}
+				}
+			}
+		}
+		br.close();
+		fr.close();
 	}
 
 	public boolean setBlock(World world, Random random, int i, int j, int k, char c) {
