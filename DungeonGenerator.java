@@ -31,82 +31,11 @@ public class DungeonGenerator implements IWorldGenerator {
 			}
 			if(cfg.generate_num_limit == -1 || cfg.num < cfg.generate_num_limit) {
 				if(cfg.skip++ >= cfg.generate_frequency) {
-					int xs = 0, zs = 0;
-/*
-					int xd = cfg.map.length >> 4;
-					int zd = cfg.map[0][0].length >> 4;
-
-					xd++;
-					zd++;
-					System.out.print("chunk =");
-					System.out.print(chunkX);
-					System.out.print(", ");
-					System.out.println(chunkZ);
-
-					int n = 0;
-					boolean exist = false;
-					for(int x = -xd; x <= 0; x++) {
-						for(int z = -zd; z <= 0; z++) {
-							if(chunkProvider.chunkExists(chunkX + x, chunkZ + z)) {
-								n++;
-							}
-						}
+					if(generateDungeon(world, random, chunkX << 4, chunkZ << 4, cfg)) {
+						cfg.skip = - random.nextInt(cfg.generate_frequency / 2);
+						cfg.num += 1;
 					}
-					if(n > xd * zd - 1) {
-						xs = -xd;
-						zs = -zd;
-						exist = true;
-					}
-
-					n = 0;
-					for(int x = -xd; x <= 0; x++) {
-						for(int z = 0; z <= zd; z++) {
-							if(chunkProvider.chunkExists(chunkX + x, chunkZ + z)) {
-								n++;
-							}
-						}
-					}
-					if(n > xd * zd - 1) {
-						xs = -xd;
-						zs = 0;
-						exist = true;
-					}
-
-					n = 0;
-					for(int x = 0; x <= xd; x++) {
-						for(int z = -zd; z <= 0; z++) {
-							if(chunkProvider.chunkExists(chunkX + x, chunkZ + z)) {
-								n++;
-							}
-						}
-					}
-					if(n > xd * zd - 1) {
-						xs = 0;
-						zs = -zd;
-						exist = true;
-					}
-
-					n = 0;
-					for(int x = 0; x <= xd; x++) {
-						for(int z = 0; z <= zd; z++) {
-							if(chunkProvider.chunkExists(chunkX + x, chunkZ + z)) {
-								n++;
-							}
-						}
-					}
-					if(n > xd * zd - 1) {
-						xs = 0;
-						zs = 0;
-						exist = true;
-					}
-
-					if(exist) {*/
-						if(generateDungeon(world, random, (chunkX + xs) << 4, (chunkZ + zs) << 4, cfg)) {
-							cfg.skip = - random.nextInt(cfg.generate_frequency / 2);
-							cfg.num += 1;
-						}
-						break;
-					//}
+					break;
 				}
 			}
 		}
