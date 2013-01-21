@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -248,34 +249,21 @@ public class DungeonMap {
 			}
 			TileEntity tile = world.getBlockTileEntity(i, j, k);
 			if(tile != null) {
-
-				Map m = EntityList.stringToClassMapping;
-				Iterator it = m.keySet().iterator();
-				String name = settings.mobSpawnerMap.get(c);
-				if(name.compareToIgnoreCase("MOB") == 0) {
-					String[] mobnames = Config.random_mob.split(",");
-					name = mobnames[random.nextInt(mobnames.length)].trim();
-				}
-				else if(name.compareToIgnoreCase("BOSS") == 0) {
-					String[] mobnames = Config.random_boss.split(",");
-					name = mobnames[random.nextInt(mobnames.length)].trim();
-				}
-				while (it.hasNext()) {
-					String mobname = (String) it.next();
-					if (mobname.compareToIgnoreCase(name) == 0) {
-						Entity e = EntityList.createEntityByName(mobname, world);
-						if(e == null) {
-							continue;
-						}
-						TileEntityOneUseMobSpawner tileSpawner = (TileEntityOneUseMobSpawner) tile;
-						NBTTagCompound tag = new NBTTagCompound();
-						NBTTagCompound itemTag = new NBTTagCompound();
-						e.addEntityID(tag);
-						itemTag.setCompoundTag("MobNBT", tag);
-						tileSpawner.mobNBT = tag;
-						tileSpawner.spawnCount = 1;
-						return true;
+				String mobname = parseMobsString(settings.mobSpawnerMap.get(c), random);
+				if(mobname != null) {
+					Entity e = EntityList.createEntityByName(mobname, world);
+					if(e == null) {
+						FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
+						return false;
 					}
+					TileEntityOneUseMobSpawner tileSpawner = (TileEntityOneUseMobSpawner) tile;
+					NBTTagCompound tag = new NBTTagCompound();
+					NBTTagCompound itemTag = new NBTTagCompound();
+					e.addEntityID(tag);
+					itemTag.setCompoundTag("MobNBT", tag);
+					tileSpawner.mobNBT = tag;
+					tileSpawner.spawnCount = 1;
+					return true;
 				}
 				FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 				return false;
@@ -298,23 +286,10 @@ public class DungeonMap {
 			if(settings.mobSpawnerMap.containsKey(c)) {
 				TileEntityMobSpawner tile = (TileEntityMobSpawner) world.getBlockTileEntity(i, j, k);
 				if (tile != null) {
-					Map m = EntityList.stringToClassMapping;
-					Iterator it = m.keySet().iterator();
-					String name = settings.mobSpawnerMap.get(c);
-					if(name.compareToIgnoreCase("MOB") == 0) {
-						String[] mobnames = Config.random_mob.split(",");
-						name = mobnames[random.nextInt(mobnames.length)].trim();
-					}
-					else if(name.compareToIgnoreCase("BOSS") == 0) {
-						String[] mobnames = Config.random_boss.split(",");
-						name = mobnames[random.nextInt(mobnames.length)].trim();
-					}
-					while (it.hasNext()) {
-						String mobname = (String) it.next();
-						if (mobname.compareToIgnoreCase(name) == 0) {
-							tile.setMobID(mobname);
-							return true;
-						}
+					String mobname = parseMobsString(settings.mobSpawnerMap.get(c), random);
+					if(mobname != null) {
+						tile.setMobID(mobname);
+						return true;
 					}
 					FMLLog.log(Level.WARNING, "ButterDungeons %c is Spawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 					return false;
@@ -326,4 +301,35 @@ public class DungeonMap {
 		return true;
 	}
 
+	String parseMobsString(String par1, Random random) {
+
+		List<String> names = new ArrayList<String>();
+		for(String token : par1.split(",")) {
+			if(token != null && token.trim().isEmpty() == false) {
+				String name = token.trim();
+				if(name.compareToIgnoreCase("MOB") == 0) {
+					names.add(parseMobsString(Config.random_mob, random));
+				}
+				else if(name.compareToIgnoreCase("BOSS") == 0) {
+					names.add(parseMobsString(Config.random_boss, random));
+				}
+				else {
+					Map m = EntityList.stringToClassMapping;
+					Iterator it = m.keySet().iterator();
+					while (it.hasNext()) {
+						String mobname = (String) it.next();
+						if (mobname.compareToIgnoreCase(name) == 0) {
+							names.add(name);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if(names.size() == 0) {
+			return null;
+		}
+		return names.get(random.nextInt(names.size()));
+	}
 }
