@@ -42,6 +42,10 @@ public class CommandCut extends  CommandBase  {
 			return;
 		}
 
+		if(player.capabilities.isCreativeMode == false) {
+			return;
+		}
+
 		if(var2.length < 1) {
 			return;
 		}

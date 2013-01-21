@@ -25,6 +25,10 @@ public class CommandPaste extends CommandBase implements ICommand {
 			return;
 		}
 
+		if(player.capabilities.isCreativeMode == false) {
+			return;
+		}
+
 		if(var2.length < 1) {
 			return;
 		}
