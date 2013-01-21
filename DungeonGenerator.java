@@ -24,7 +24,7 @@ public class DungeonGenerator implements IWorldGenerator {
 				continue;
 			}
 			if(cfg.allow_biomes.contains("all") == false) {
-				BiomeGenBase b = world.getBiomeGenForCoords(chunkX, chunkZ);
+				BiomeGenBase b = world.getBiomeGenForCoords(chunkX << 4, chunkZ << 4);
 				if(cfg.allow_biomes.contains(b.biomeName) == false && cfg.allow_biomes.contains(String.valueOf(b.biomeID)) == false ) {
 					continue;
 				}
@@ -151,7 +151,7 @@ public class DungeonGenerator implements IWorldGenerator {
 		for(int y = 0; y < yd; ++y) {
 			n += v.get(y);
 		}
-		if( (n * 100.0 / (xd * yd * zd * 1.0)) > cfg.replace_block_percentage) {
+		if(n * 100 >= xd * yd * zd *cfg.replace_block_percentage) {
 			buildDungeon(world, random, chunkX, cfg.floor_level_min, chunkZ, cfg);
 			cfg.generating = false;
 			return true;
@@ -159,7 +159,7 @@ public class DungeonGenerator implements IWorldGenerator {
 		for(int y = 1; y < cfg.floor_level_max - cfg.floor_level_min; ++y) {
 			n -= v.get(y);
 			n += v.get(yd + y);
-			if( (n * 100.0 / (xd * yd * zd * 1.0)) > cfg.replace_block_percentage) {
+			if(n * 100 >= xd * yd * zd *cfg.replace_block_percentage) {
 				buildDungeon(world, random, chunkX, cfg.floor_level_min + y, chunkZ, cfg);
 				cfg.generating = false;
 				return true;
