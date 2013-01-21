@@ -110,7 +110,7 @@ public class DungeonMap {
 					char c = map[i][yd - j - 1][k];
 					boolean b = true;
 					try {
-						b = setBlock(cfg, world, random, x + i, y + j, z + k, c);
+						b = setBlock(cfg.settings, world, random, x + i, y + j, z + k, c);
 					}
 					catch(Exception e) {
 						FMLLog.log(Level.WARNING, e, "ButterDungeons setBlock exception %c", c);
@@ -128,7 +128,7 @@ public class DungeonMap {
 						char c = map[i][yd - j - 1][k];
 						boolean b = true;
 						try {
-							b = setBlock(cfg, world, random, x + i, y + j, z + k, c);
+							b = setBlock(cfg.settings, world, random, x + i, y + j, z + k, c);
 						}
 						catch(Exception e) {
 							FMLLog.log(Level.WARNING, e, "ButterDungeons setBlock exception %c", c);
@@ -140,7 +140,7 @@ public class DungeonMap {
 		FMLLog.log(Level.INFO, "ButterDungeons generateDungeon %s in %d, %d, %d", cfg.getName(), x, y, z);
 	}
 
-	public boolean setBlock(DungeonConfig dungeonConfig, World world, Random random, int i, int j, int k, char c) {
+	public boolean setBlock(DungeonSettings settings, World world, Random random, int i, int j, int k, char c) {
 
 		if(c == ' ') {
 			return world.setBlock(i, j, k, 0);
@@ -150,15 +150,15 @@ public class DungeonMap {
 			return true;
 		}
 
-		if(dungeonConfig.mobMap.containsKey(c)) {
+		if(settings.mobMap.containsKey(c)) {
 			FMLLog.log(Level.WARNING, "ButterDungeons %c as Mob not implemented in this version", c);
 			return false;
 		}
-		if(dungeonConfig.blockIdMap.containsKey(c) == false) {
+		if(settings.blockIdMap.containsKey(c) == false) {
 			FMLLog.log(Level.WARNING, "ButterDungeons %c is unknown character", c);
 			return world.setBlock(i, j, k, 0);
 		}
-		int blockId = dungeonConfig.blockIdMap.get(c);
+		int blockId = settings.blockIdMap.get(c);
 		Block block = Block.blocksList[blockId];
 		if(block == null) {
 			FMLLog.log(Level.WARNING, "ButterDungeons %c blockID is %d, block not found", c, blockId);
@@ -178,8 +178,8 @@ public class DungeonMap {
 			}
 		}*/
 		if(block instanceof BlockDoor) {
-			if(dungeonConfig.blockMetadataMap.containsKey(c)) {
-				int meta = dungeonConfig.blockMetadataMap.get(c);
+			if(settings.blockMetadataMap.containsKey(c)) {
+				int meta = settings.blockMetadataMap.get(c);
 				if(meta < 8) {
 					world.setBlock(i, j + 1, k, 0);
 					ItemDoor.placeDoorBlock(world, i, j, k, meta, block);
@@ -193,8 +193,8 @@ public class DungeonMap {
 		if(block.canPlaceBlockAt(world, i, j, k) == false) {
 			return false;
 		}
-		if(dungeonConfig.blockMetadataMap.containsKey(c)) {
-			if(world.setBlockAndMetadata(i, j, k, blockId, dungeonConfig.blockMetadataMap.get(c)) == false) {
+		if(settings.blockMetadataMap.containsKey(c)) {
+			if(world.setBlockAndMetadata(i, j, k, blockId, settings.blockMetadataMap.get(c)) == false) {
 				return false;
 			}
 		}
@@ -205,9 +205,9 @@ public class DungeonMap {
 		}
 
 		if(blockId == Block.chest.blockID) {
-			if(dungeonConfig.chestMap.containsKey(c)) {
-				String s = dungeonConfig.chestMap.get(c);
-				List<ItemStack> itemStacks = dungeonConfig.parseChestItemsString(s);
+			if(settings.chestMap.containsKey(c)) {
+				String s = settings.chestMap.get(c);
+				List<ItemStack> itemStacks = settings.parseChestItemsString(s);
 				TileEntityChest tile = (TileEntityChest) world.getBlockTileEntity(i, j, k);
 				if (tile != null) {
 					int n = 0;
@@ -222,9 +222,9 @@ public class DungeonMap {
 					return true;
 				}
 			}
-			else if(dungeonConfig.randomChestMap.containsKey(c)) {
-				String s = dungeonConfig.randomChestMap.get(c);
-				List<ItemStack> itemStacks = dungeonConfig.parseChestItemsString(s);
+			else if(settings.randomChestMap.containsKey(c)) {
+				String s = settings.randomChestMap.get(c);
+				List<ItemStack> itemStacks = settings.parseChestItemsString(s);
 				TileEntityChest tile = (TileEntityChest) world.getBlockTileEntity(i, j, k);
 				if (tile != null) {
 					int n = 0;
@@ -251,7 +251,7 @@ public class DungeonMap {
 
 				Map m = EntityList.stringToClassMapping;
 				Iterator it = m.keySet().iterator();
-				String name = dungeonConfig.mobSpawnerMap.get(c);
+				String name = settings.mobSpawnerMap.get(c);
 				if(name.compareToIgnoreCase("MOB") == 0) {
 					String[] mobnames = Config.random_mob.split(",");
 					name = mobnames[random.nextInt(mobnames.length)].trim();
@@ -277,7 +277,7 @@ public class DungeonMap {
 						return true;
 					}
 				}
-				FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, dungeonConfig.mobSpawnerMap.get(c));
+				FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 				return false;
 
 			}
@@ -295,12 +295,12 @@ public class DungeonMap {
 			return true;
 		}
 		if(blockId == Block.mobSpawner.blockID) {
-			if(dungeonConfig.mobSpawnerMap.containsKey(c)) {
+			if(settings.mobSpawnerMap.containsKey(c)) {
 				TileEntityMobSpawner tile = (TileEntityMobSpawner) world.getBlockTileEntity(i, j, k);
 				if (tile != null) {
 					Map m = EntityList.stringToClassMapping;
 					Iterator it = m.keySet().iterator();
-					String name = dungeonConfig.mobSpawnerMap.get(c);
+					String name = settings.mobSpawnerMap.get(c);
 					if(name.compareToIgnoreCase("MOB") == 0) {
 						String[] mobnames = Config.random_mob.split(",");
 						name = mobnames[random.nextInt(mobnames.length)].trim();
@@ -316,7 +316,7 @@ public class DungeonMap {
 							return true;
 						}
 					}
-					FMLLog.log(Level.WARNING, "ButterDungeons %c is Spawner, but related Mob %s not found", c, dungeonConfig.mobSpawnerMap.get(c));
+					FMLLog.log(Level.WARNING, "ButterDungeons %c is Spawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 					return false;
 				}
 			}
