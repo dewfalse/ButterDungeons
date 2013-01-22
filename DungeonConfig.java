@@ -45,6 +45,10 @@ public class DungeonConfig {
 	public int generate_num_limit = -1;
 	public Set<Integer> allow_dimentions = new LinkedHashSet();
 
+	public String random_treasure = "";
+	public String random_mob = "";
+	public String random_boss = "";
+
 	public String dungeon_name = "";
 
 	public int skip = 0;
@@ -88,6 +92,9 @@ public class DungeonConfig {
 		generate_frequency = cfg.get(Configuration.CATEGORY_GENERAL, "generate_frequency", generate_frequency).getInt();
 		generate_num_limit = cfg.get(Configuration.CATEGORY_GENERAL, "generate_num_limit", generate_num_limit).getInt();
 		dungeon_name = cfg.get(Configuration.CATEGORY_GENERAL, "dungeon_name", dungeon_name).value;
+		random_treasure = cfg.get(Configuration.CATEGORY_GENERAL, "random_treasure", random_treasure).value;
+		random_mob = cfg.get(Configuration.CATEGORY_GENERAL, "random_mob", random_mob).value;
+		random_boss = cfg.get(Configuration.CATEGORY_GENERAL, "random_boss", random_boss).value;
 		String cfg_allow_dimentions = cfg.get(Configuration.CATEGORY_GENERAL, "allow_dimentions", "0").value;
 		for(String token : cfg_allow_dimentions.split(",")) {
 			try {
