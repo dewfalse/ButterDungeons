@@ -196,6 +196,9 @@ public class CommandCut extends  CommandBase  {
 			DungeonConfig cfg = new DungeonConfig();
 			cfg.generate_num_limit = 0;
 			cfg.dungeon_name = t;
+			cfg.random_boss = Config.random_boss;
+			cfg.random_mob = Config.random_mob;
+			cfg.random_treasure = Config.random_treasure;
 			cfg.save(file);
 			Dungeons.loadDungeonConfig(file);
 		}
