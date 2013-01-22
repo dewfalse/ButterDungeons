@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.tileentity.TileEntityDispenser;
 import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.FMLLog;
@@ -249,7 +250,7 @@ public class DungeonMap {
 			}
 			TileEntity tile = world.getBlockTileEntity(i, j, k);
 			if(tile != null) {
-				String mobname = parseMobsString(settings.mobSpawnerMap.get(c), random);
+				String mobname = parseMobsString(settings, settings.mobSpawnerMap.get(c), random);
 				if(mobname != null) {
 					Entity e = EntityList.createEntityByName(mobname, world);
 					if(e == null) {
@@ -282,11 +283,25 @@ public class DungeonMap {
 			}*/
 			return true;
 		}
+		if(blockId == Block.dispenser.blockID) {
+			if(settings.dispenserMap.containsKey(c)) {
+				TileEntityDispenser tile = (TileEntityDispenser) world.getBlockTileEntity(i, j, k);
+				if(tile != null) {
+					int n = 0;
+					for(ItemStack itemStack : settings.parseChestItemsString(settings.dispenserMap.get(c))) {
+						tile.setInventorySlotContents(n++, itemStack);
+						if(n == tile.getSizeInventory()) {
+							break;
+						}
+					}
+				}
+			}
+		}
 		if(blockId == Block.mobSpawner.blockID) {
 			if(settings.mobSpawnerMap.containsKey(c)) {
 				TileEntityMobSpawner tile = (TileEntityMobSpawner) world.getBlockTileEntity(i, j, k);
 				if (tile != null) {
-					String mobname = parseMobsString(settings.mobSpawnerMap.get(c), random);
+					String mobname = parseMobsString(settings, settings.mobSpawnerMap.get(c), random);
 					if(mobname != null) {
 						tile.setMobID(mobname);
 						return true;
@@ -301,17 +316,17 @@ public class DungeonMap {
 		return true;
 	}
 
-	String parseMobsString(String par1, Random random) {
+	String parseMobsString(DungeonSettings settings, String par1, Random random) {
 
 		List<String> names = new ArrayList<String>();
 		for(String token : par1.split(",")) {
 			if(token != null && token.trim().isEmpty() == false) {
 				String name = token.trim();
 				if(name.compareToIgnoreCase("MOB") == 0) {
-					names.add(parseMobsString(Config.random_mob, random));
+					names.add(parseMobsString(settings, Config.random_mob, random));
 				}
 				else if(name.compareToIgnoreCase("BOSS") == 0) {
-					names.add(parseMobsString(Config.random_boss, random));
+					names.add(parseMobsString(settings, Config.random_boss, random));
 				}
 				else {
 					Map m = EntityList.stringToClassMapping;
