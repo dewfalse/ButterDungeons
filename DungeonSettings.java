@@ -27,6 +27,7 @@ public class DungeonSettings {
 	public Map<Character, String> chestMap = new LinkedHashMap();
 	public Map<Character, String> randomChestMap = new LinkedHashMap();
 	public Map<Character, String> mobMap = new LinkedHashMap();
+	public Map<Character, String> dispenserMap = new LinkedHashMap();
 
 	void loadSettings(File cfg_file) throws FileNotFoundException, IOException {
 		File file = new File(cfg_file.getParent(), cfg_file.getName().replace(".cfg", ".settings"));
@@ -64,6 +65,28 @@ public class DungeonSettings {
 				else if(value.trim().startsWith("RANDOMCHEST")) {
 					randomChestMap.put(c, value.replaceFirst("RANDOMCHEST", "").trim());
 					blockIdMap.put(c, Block.chest.blockID);
+				}
+				// c = DISPENSER:4 stone * 1, ingotIron * 1, cloth:4 * 1, 14 * 2, potion+
+				else if(value.trim().startsWith("DISPENSER")) {
+					int pos = value.trim().indexOf(" ");
+					String s1 = (pos >= 0) ? value.trim().substring(0, pos).trim() : value.trim();
+					// with items
+					if(pos >= 0) {
+						String s2 = value.trim().substring(pos);
+						dispenserMap.put(c, s2);
+					}
+					// with metadata
+					String[] a = s1.split(":");
+					if(a.length == 2) {
+						try {
+							int meta = Integer.parseInt(a[1].trim());
+							blockMetadataMap.put(c, meta);
+						}
+						catch(NumberFormatException e) {
+							FMLLog.log(Level.WARNING, e, "ButterDungeons setting invalid: %d line", linenum);
+						}
+					}
+					blockIdMap.put(c, Block.dispenser.blockID);
 				}
 				// c = SPAWNER pig
 				else if(value.trim().startsWith("SPAWNER")) {
@@ -153,7 +176,7 @@ public class DungeonSettings {
 			}
 
 			if(token.trim().compareToIgnoreCase("RANDOM_TREASURE") == 0) {
-				List<ItemStack> treasures = parseChestItemsString(token);
+				List<ItemStack> treasures = parseChestItemsString(Config.random_treasure);
 				for(ItemStack item : treasures) {
 					itemStacks.add(item);
 				}
