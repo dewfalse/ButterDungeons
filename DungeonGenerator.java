@@ -29,7 +29,9 @@ public class DungeonGenerator implements IWorldGenerator {
 			}
 			if(cfg.generate_num_limit == -1 || cfg.num < cfg.generate_num_limit) {
 				if(cfg.skip++ >= cfg.generate_frequency) {
-					if(generateDungeon(world, random, chunkX << 4, chunkZ << 4, cfg)) {
+					int xs = random.nextInt(16);
+					int zs = random.nextInt(16);
+					if(generateDungeon(world, random, (chunkX << 4) + xs, (chunkZ << 4) + zs, cfg)) {
 						cfg.skip = - random.nextInt(cfg.generate_frequency / 2);
 						cfg.num += 1;
 					}
@@ -50,9 +52,6 @@ public class DungeonGenerator implements IWorldGenerator {
 		int xd = cfg.map.map.length;
 		int yd = cfg.map.map[0].length;
 		int zd = cfg.map.map[0][0].length;
-
-		int xs = random.nextInt(16);
-		int zs = random.nextInt(16);
 
 		Vector<Integer> v = new Vector();
 		for(int y = cfg.floor_level_min; y < cfg.floor_level_max + yd; ++y) {
