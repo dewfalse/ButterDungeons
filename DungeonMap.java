@@ -105,6 +105,21 @@ public class DungeonMap {
 		int yd = map[0].length;
 		int zd = map[0][0].length;
 
+		for(int j = 0 ; j < yd; ++j) {
+			for(int i = 0; i < xd; ++i) {
+				for(int k = 0; k < zd; ++k) {
+					char c = map[i][yd - j - 1][k];
+					boolean b = true;
+					try {
+						b = clearBlock(cfg.settings, world, x + i, y + j, z + k, c);
+					}
+					catch(Exception e) {
+						FMLLog.log(Level.WARNING, e, "ButterDungeons clearBlock exception %c", c);
+					}
+				}
+			}
+		}
+
 		boolean[][][] r = new boolean[xd][yd][zd];
 		for(int j = 0 ; j < yd; ++j) {
 			for(int i = 0; i < xd; ++i) {
@@ -140,6 +155,15 @@ public class DungeonMap {
 			}
 		}
 		FMLLog.log(Level.INFO, "ButterDungeons generateDungeon %s in %d, %d, %d", cfg.getName(), x, y, z);
+	}
+
+	public boolean clearBlock(DungeonSettings settings, World world, int i, int j, int k, char c) {
+
+		if(c == '_') {
+			return true;
+		}
+
+		return world.setBlock(i, j, k, 0);
 	}
 
 	public boolean setBlock(DungeonSettings settings, World world, Random random, int i, int j, int k, char c) {
