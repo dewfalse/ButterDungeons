@@ -57,6 +57,7 @@ public class ButterDungeons {
 		try {
 			cfg.load();
 			Config.root_path = cfg.get(Configuration.CATEGORY_GENERAL, "dungeon_config_root_path", Config.root_path).value;
+			Config.oneusespawner_path = cfg.get(Configuration.CATEGORY_GENERAL, "oneusespawner_path", Config.oneusespawner_path).value;
 			Config.better_dungeons_path = cfg.get(Configuration.CATEGORY_GENERAL, "better_dungeons_path", Config.better_dungeons_path).value;
 			Config.random_treasure = cfg.get(Configuration.CATEGORY_GENERAL, "random_treasure", Config.random_treasure).value;
 			Config.random_mob = cfg.get(Configuration.CATEGORY_GENERAL, "random_mob", Config.random_mob).value;

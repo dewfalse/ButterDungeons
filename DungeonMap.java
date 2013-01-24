@@ -2,6 +2,7 @@ package butterdungeons;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,11 +17,13 @@ import java.util.logging.Level;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
@@ -274,30 +277,13 @@ public class DungeonMap {
 				return true;
 			}
 			TileEntity tile = world.getBlockTileEntity(i, j, k);
-			if(tile != null) {
-				String mobname = parseMobsString(settings, settings.mobSpawnerMap.get(c), random);
-				if(mobname != null) {
-					Entity e = EntityList.createEntityByName(mobname, world);
-					if(e == null) {
-						FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
-						return false;
-					}
-					TileEntityOneUseMobSpawner tileSpawner = (TileEntityOneUseMobSpawner) tile;
-					NBTTagCompound tag = new NBTTagCompound();
-					NBTTagCompound itemTag = new NBTTagCompound();
-					e.addEntityID(tag);
-					if(e instanceof EntityLiving) {
-						tag.setBoolean("PersistenceRequired", true);
-					}
-					itemTag.setCompoundTag("MobNBT", tag);
-					tileSpawner.mobNBT = tag;
-					tileSpawner.spawnCount = 1;
-					return true;
-				}
+			if(tile == null) {
+				return false;
+			}
+			if(setOneUseSpawnerData(settings, settings.mobSpawnerMap.get(c), world, random, tile) == false) {
 				FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 				return false;
 			}
-			return true;
 		}
 		if(blockId == Block.dispenser.blockID) {
 			if(settings.dispenserMap.containsKey(c)) {
@@ -330,6 +316,75 @@ public class DungeonMap {
 			return false;
 		}
 		return true;
+	}
+
+	boolean setOneUseSpawnerData(DungeonSettings settings, String par1, World world, Random random, TileEntity tile) {
+		if(tile instanceof TileEntityOneUseMobSpawner == false) {
+			return false;
+		}
+		TileEntityOneUseMobSpawner tileSpawner = (TileEntityOneUseMobSpawner) tile;
+
+		// tokenize settings string
+		List<String> mobnames = new ArrayList();
+		for(String token : par1.split(",")) {
+			if(token != null && token.trim().isEmpty() == false) {
+				mobnames.add(token.trim());
+			}
+		}
+
+		while(mobnames.size() > 0) {
+			// fetch random one token
+			int n = random.nextInt(mobnames.size());
+			String mobname = mobnames.get(n);
+
+			NBTTagCompound tag = readOneUseSpawnerData(mobname);
+			if(tag != null) {
+				// this is OneUseSpawnerData file name
+				tag.setBoolean("PersistenceRequired", true);
+				tileSpawner.mobNBT = tag;
+				tileSpawner.spawnCount = 1;
+				return true;
+			}
+			else {
+				// same name file not found, perhaps this is entity name
+				String name = parseMobsString(settings, mobname, random);
+				if(name != null) {
+					Entity e = EntityList.createEntityByName(mobname, world);
+					if(e != null) {
+						tag = new NBTTagCompound();
+						NBTTagCompound itemTag = new NBTTagCompound();
+						e.addEntityID(tag);
+						if(e instanceof EntityLiving) {
+							tag.setBoolean("PersistenceRequired", true);
+						}
+						itemTag.setCompoundTag("MobNBT", tag);
+						tileSpawner.mobNBT = tag;
+						tileSpawner.spawnCount = 1;
+						return true;
+					}
+				}
+			}
+			mobnames.remove(n);
+		}
+		return false;
+	}
+
+	NBTTagCompound readOneUseSpawnerData(String par1) {
+		try {
+			File logDir = new File(Minecraft.getMinecraftDir(), Config.oneusespawner_path);
+			File logFile = new File(logDir, par1);
+			if(logFile.exists() && logFile.isFile()) {
+				FileInputStream dat = new FileInputStream(logFile);
+				return CompressedStreamTools.readCompressed(dat);
+			}
+		} catch (FileNotFoundException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	String parseMobsString(DungeonSettings settings, String par1, Random random) {
