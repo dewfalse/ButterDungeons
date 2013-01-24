@@ -18,6 +18,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.item.ItemDoor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -285,6 +286,9 @@ public class DungeonMap {
 					NBTTagCompound tag = new NBTTagCompound();
 					NBTTagCompound itemTag = new NBTTagCompound();
 					e.addEntityID(tag);
+					if(e instanceof EntityLiving) {
+						tag.setBoolean("PersistenceRequired", true);
+					}
 					itemTag.setCompoundTag("MobNBT", tag);
 					tileSpawner.mobNBT = tag;
 					tileSpawner.spawnCount = 1;
