@@ -296,19 +296,7 @@ public class DungeonMap {
 				}
 				FMLLog.log(Level.WARNING, "ButterDungeons %c is OneUseSpawner, but related Mob %s not found", c, settings.mobSpawnerMap.get(c));
 				return false;
-
 			}
-			/*
-			if(world.setBlock(i, j, k, blockId) == false) {
-				return false;
-			}
-			Block b = Block.blocksList[blockId];
-			if(b == null) {
-				return false;
-			}
-			if(b.getClass().getName() == "flammpfeil.oneusespawner.BlockOneUseMobSpawner") {
-
-			}*/
 			return true;
 		}
 		if(blockId == Block.dispenser.blockID) {
